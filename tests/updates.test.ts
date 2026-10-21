@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { compareVersions, fetchLatestRelease, isAllowedDownload, parseRelease } from "../src/lib/updates";
 
-const valid = { tag_name: "v0.6.0", draft: false, prerelease: false, assets: [{ name: "Courses.apk", state: "uploaded", size: 1234, browser_download_url: "https://github.com/MJacopoLEO/shopping_list/releases/download/v0.6.0/Courses.apk" }] };
+const valid = { tag_name: "v0.6.0", draft: false, prerelease: false, assets: [{ name: "Courses.apk", state: "uploaded", size: 1234, browser_download_url: "https://github.com/ptit-dev3313/shopping_list/releases/download/v0.6.0/Courses.apk" }] };
 afterEach(() => vi.unstubAllGlobals());
 it("compare numériquement les versions, y compris les versions à plusieurs chiffres", () => {
   expect(compareVersions("0.10.0", "v0.9.0")).toBe(1);
@@ -17,7 +17,7 @@ it("propose uniquement les versions stables avec l’APK attendue", () => {
   expect(parseRelease({ ...valid, tag_name: "v9.0.0" })).toBeNull();
 });
 it("refuse les APK venant d’un autre dépôt, domaine ou protocole", () => {
-  for (const url of ["http://github.com/MJacopoLEO/shopping_list/releases/download/v0.6.0/Courses.apk", "https://evil.example/Courses.apk", "https://github.com/other/repo/releases/download/v0.6.0/Courses.apk", "https://github.com/MJacopoLEO/shopping_list/releases/download/v0.6.0/Courses.apk?redirect=bad"]) {
+  for (const url of ["http://github.com/ptit-dev3313/shopping_list/releases/download/v0.6.0/Courses.apk", "https://evil.example/Courses.apk", "https://github.com/other/repo/releases/download/v0.6.0/Courses.apk", "https://github.com/ptit-dev3313/shopping_list/releases/download/v0.6.0/Courses.apk?redirect=bad"]) {
     expect(isAllowedDownload(url)).toBe(false);
     expect(parseRelease({ ...valid, assets: [{ ...valid.assets[0], browser_download_url: url }] })).toBeNull();
   }

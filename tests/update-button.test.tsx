@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({ persist: vi.fn(async () => true), openDownload
 vi.mock("@capacitor/core", () => ({ Capacitor: { getPlatform: () => "android", isNativePlatform: () => false }, registerPlugin: () => ({ openDownload: mocks.openDownload }) }));
 vi.mock("../src/context/AppContext", () => ({ useApp: () => ({ persist: mocks.persist }) }));
 afterEach(() => { cleanup(); localStorage.clear(); vi.unstubAllGlobals(); vi.clearAllMocks(); });
-const latest = { tag_name: "v0.6.0", draft: false, prerelease: false, assets: [{ name: "Courses.apk", state: "uploaded", size: 1234, browser_download_url: "https://github.com/MJacopoLEO/shopping_list/releases/download/v0.6.0/Courses.apk" }] };
+const latest = { tag_name: "v0.6.0", draft: false, prerelease: false, assets: [{ name: "Courses.apk", state: "uploaded", size: 1234, browser_download_url: "https://github.com/ptit-dev3313/shopping_list/releases/download/v0.6.0/Courses.apk" }] };
 
 it("signale une mise à jour et sauvegarde avant d’ouvrir le téléchargement officiel", async () => {
   vi.stubGlobal("fetch", vi.fn(async () => ({ status: 200, ok: true, json: async () => latest })));

@@ -16,7 +16,7 @@ public class AppUpdatesPlugin extends Plugin {
         String path = uri.getPath();
         if (!"https".equals(uri.getScheme()) || !"github.com".equals(uri.getHost()) ||
             uri.getUserInfo() != null || uri.getPort() != -1 || uri.getQuery() != null || uri.getFragment() != null ||
-            path == null || !path.matches("/MJacopoLEO/shopping_list/releases/download/v?\\d+\\.\\d+\\.\\d+/Courses\\.apk")) {
+            path == null || !path.matches("/ptit-dev3313/shopping_list/releases/download/v?\\d+\\.\\d+\\.\\d+/Courses\\.apk")) {
             call.reject("Invalid update URL");
             return;
         }

@@ -2,13 +2,13 @@
 
 ## Avant de rendre le dépôt public
 
-Le dépôt distant `MJacopoLEO/shopping_list` est actuellement privé. L’audit du 21 octobre 2026 a trouvé d’anciens jetons GitHub dans l’historique Python (`src/shopping_list/sync.py` et `src/shopping_list/github_gist.py`, plusieurs commits). Ils ne sont pas reproduits ici. **Ne rendez pas cet historique public.** Révoquez les anciens jetons concernés dans les paramètres GitHub, puis nettoyez l’historique avant de changer la visibilité. Supprimer les fichiers dans un nouveau commit ne suffit pas. Les références de PR, tags, branches et les caches GitHub doivent aussi être pris en compte.
+Le dépôt distant `ptit-dev3313/shopping_list` est actuellement privé. L’audit du 21 octobre 2026 a trouvé d’anciens jetons GitHub dans l’historique Python (`src/shopping_list/sync.py` et `src/shopping_list/github_gist.py`, plusieurs commits). Ils ne sont pas reproduits ici. **Ne rendez pas cet historique public.** Révoquez les anciens jetons concernés dans les paramètres GitHub, puis nettoyez l’historique avant de changer la visibilité. Supprimer les fichiers dans un nouveau commit ne suffit pas. Les références de PR, tags, branches et les caches GitHub doivent aussi être pris en compte.
 
 Le code courant ne nécessite aucun jeton GitHub embarqué. Les données utilisateurs restent dans Supabase, avec les politiques RLS. L’URL Supabase et la clé publique/anon sont une configuration publique de client ; elles ne remplacent pas les contrôles d’accès. Ne publiez jamais de clé `service_role`, mot de passe de base, fichier `.env`, jeton personnel ou clé privée de signature. Le dépôt ignore les fichiers de signature, `.tools/`, `.env*` (sauf `.env.example`) et les sorties de compilation. Garder un dépôt public ne publie pas automatiquement les données Supabase ; toute future table exposée doit cependant rester protégée.
 
 ## Configuration déjà préparée
 
-- Dépôt et nom d’APK : `release.config.json` (`MJacopoLEO/shopping_list`, `Courses.apk`).
+- Dépôt et nom d’APK : `release.config.json` (`ptit-dev3313/shopping_list`, `Courses.apk`).
 - Vérification automatique au démarrage puis à la reprise (au maximum toutes les six heures), et manuelle via le bouton en haut à droite.
 - Seules les releases stables publiées et contenant `Courses.apk` sont proposées. Les brouillons et préversions sont exclus. Les liens sont limités à ce dépôt GitHub.
 - Téléchargement par le navigateur système. L’utilisateur ouvre ensuite l’APK et confirme l’installation dans Android. Aucune installation silencieuse ni permission d’installation ajoutée à Courses.
