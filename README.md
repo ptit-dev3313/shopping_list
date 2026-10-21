@@ -34,7 +34,7 @@ Téléphone (navigateur, même Wi-Fi) : ouvrez l’URL affichée par Vite.
 
 ## Android / APK
 
-La version 0.5.0 corrige la zone utilisable Android (barres système, découpes et clavier) et ajoute le bouton **Mises à jour** en haut à droite. La configuration des publications, de la signature et du dépôt public est détaillée dans [docs/ANDROID_RELEASES.md](docs/ANDROID_RELEASES.md). **L’ancien historique contient des jetons GitHub : révoquez-les et nettoyez l’historique avant de rendre le dépôt public.**
+La version 0.5.0 corrige la zone utilisable Android (barres système, découpes et clavier) et ajoute le bouton **Mises à jour** en haut à droite. La configuration des publications, de la signature et du dépôt public est détaillée dans [docs/ANDROID_RELEASES.md](docs/ANDROID_RELEASES.md). L’ancien jeton GitHub a fait l’objet d’une demande de révocation acceptée et l’historique public a été nettoyé. Ne republiez pas les anciennes copies privées.
 
 Le projet Android est dans `android/`. Installez les dépendances, un JDK 21 et le SDK Android 36. Configurez `JAVA_HOME` et `ANDROID_HOME`. Le script utilise aussi un JDK 21 portable présent dans `.tools/jdk21/` si disponible. Gradle 8.14 ne prend pas en charge le JDK 25.
 
