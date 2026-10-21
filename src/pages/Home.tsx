@@ -4,7 +4,7 @@ import { useApp } from "../context/AppContext";
 
 export function Home() {
   const navigate = useNavigate();
-  const { persist, saving, email } = useApp();
+  const { persist, email } = useApp();
   const isElectron = Boolean(window.electronAPI?.isElectron);
 
   return (
@@ -19,9 +19,6 @@ export function Home() {
       </div>
       <button className="btn ghost" type="button" onClick={() => navigate("/settings")}>
         Paramètres
-      </button>
-      <button className="btn primary" type="button" disabled={saving} onClick={() => void persist(true)}>
-        {saving ? "Sauvegarde…" : "Sauvegarder"}
       </button>
       {isElectron ? (
         <button

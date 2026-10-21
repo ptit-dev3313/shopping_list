@@ -42,9 +42,6 @@ export function Settings() {
       >
         Enregistrer le mot de passe
       </button>
-      <button className="btn primary" type="button" onClick={() => void persist(true)}>
-        Sauvegarder
-      </button>
       <button
         className="btn"
         type="button"

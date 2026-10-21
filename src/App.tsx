@@ -10,7 +10,7 @@ import { EditShopping, Shoppings } from "./pages/Shoppings";
 import { UpdateProvider } from "./context/UpdateContext";
 
 function Shell() {
-  const { session, loading, saving, toast, setToast, spaceId, spaces, switchSpace } = useApp();
+  const { session, loading, saveStatus, saveMessage, persist, toast, setToast, spaceId, spaces, switchSpace } = useApp();
 
   if (!session) return <Login />;
 
@@ -18,11 +18,15 @@ function Shell() {
     <div className="app">
       <label className="field space-picker">
         Espace actif
-        <select value={spaceId ?? ""} disabled={loading || saving} onChange={(event) => void switchSpace(event.target.value)}>
+        <select value={spaceId ?? ""} disabled={loading} onChange={(event) => void switchSpace(event.target.value)}>
           {!spaceId ? <option value="">Chargement…</option> : null}
           {spaces.map((space) => <option key={space.id} value={space.id}>{space.name}{space.owner_id === session.user.id ? " (à moi)" : " (partagé)"}</option>)}
         </select>
       </label>
+      {!loading ? <div className={`autosave-status ${saveStatus}`} role="status">
+        <span>{saveStatus === "saved" ? "✓ Enregistré automatiquement" : saveStatus === "saving" ? "Enregistrement…" : saveStatus === "pending" ? "Modifications en attente…" : "Enregistrement en attente — vos modifications restent sur cet appareil."}</span>
+        {saveStatus === "error" ? <><small>{saveMessage}</small><button className="btn ghost" onClick={() => void persist()}>Réessayer</button></> : null}
+      </div> : null}
       <Routes key={`${session.user.id}:${spaceId}`}>
         <Route path="/" element={<Home />} />
         <Route path="/recipes" element={<Recipes />} />
@@ -35,10 +39,10 @@ function Shell() {
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {loading || saving ? (
+      {loading ? (
         <div className="overlay">
           <div className="sheet">
-            <p>{saving ? "Sauvegarde…" : "Chargement…"}</p>
+            <p>Chargement…</p>
           </div>
         </div>
       ) : null}

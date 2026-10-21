@@ -2,13 +2,14 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import type { Session } from "@supabase/supabase-js";
 import { Capacitor } from "@capacitor/core";
 import { App as NativeApp } from "@capacitor/app";
+import { Autosave, type SaveStatus } from "../lib/autosave";
 import { emptyData, type AppData } from "../lib/types";
 import { listSpaces, loadRemoteData, saveRemoteData, subscribeToData, supabase, type Space } from "../lib/supabase";
 
 type Toast = { kind: "info" | "error"; message: string } | null;
-type Scope = { user: string; space: string; data: AppData; revision: number; dirty: boolean; ready: boolean };
+type Scope = { user: string; space: string; data: AppData; revision: number; dirty: boolean; ready: boolean; queue?: Autosave<AppData> };
 type AppContextValue = {
-  session: Session | null; data: AppData; loading: boolean; saving: boolean; toast: Toast;
+  session: Session | null; data: AppData; loading: boolean; saving: boolean; saveStatus: SaveStatus; saveMessage: string; toast: Toast;
   email: string | undefined; spaces: Space[]; spaceId: string | null;
   setToast: (toast: Toast) => void; error: (message: string) => void; info: (message: string) => void;
   updateData: (updater: (data: AppData) => AppData) => void;
@@ -24,10 +25,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [spaceId, setSpaceId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
+  const [saveMessage, setSaveMessage] = useState("");
+  const saving = saveStatus === "saving";
   const [toast, setToast] = useState<Toast>(null);
   const current = useRef<Scope>(blank());
-  const inFlight = useRef(false);
+
   const error = useCallback((message: string) => setToast({ kind: "error", message }), []);
   const info = useCallback((message: string) => setToast({ kind: "info", message }), []);
 
@@ -61,32 +64,80 @@ export function AppProvider({ children }: { children: ReactNode }) {
     void refreshSpaces().catch((err: Error) => { if (current.current.user === userId) { error(err.message); setLoading(false); } });
   }, [userId, refreshSpaces, error]);
 
+  const draftKey = (scope: Scope) => `courses:draft:${scope.user}:${scope.space}`;
+  const attach = useCallback((scope: Scope, payload: AppData, revision: number) => {
+    const queue = new Autosave(payload, revision,
+      (value, base) => {
+        if (current.current !== scope || scope.queue !== queue) return Promise.reject(new Error("L’espace actif a changé."));
+        return saveRemoteData(scope.space, value, base);
+      },
+      () => {
+        if (current.current !== scope || (scope.queue && scope.queue !== queue)) return;
+        scope.data = queue.data; scope.revision = queue.revision; scope.dirty = queue.dirty;
+        setSaveStatus(queue.status); setSaveMessage(queue.message);
+      },
+      (draft) => {
+        if (current.current !== scope || (scope.queue && scope.queue !== queue)) return;
+        try {
+          if (draft) localStorage.setItem(draftKey(scope), JSON.stringify(draft));
+          else localStorage.removeItem(draftKey(scope));
+        } catch { /* Cloud saving still works if device storage is full. */ }
+      });
+    scope.queue = queue; scope.data = payload; scope.revision = revision; scope.dirty = false; scope.ready = true;
+    setData(payload); setSaveStatus("saved"); setSaveMessage("");
+    return queue;
+  }, []);
   const reload = useCallback(async () => {
     const scope = current.current;
     if (!scope.space) return;
-    const remote = await loadRemoteData(scope.space);
-    if (current.current !== scope) return;
-    current.current = { ...scope, data: remote.payload, revision: remote.revision, dirty: false, ready: true };
-    setData(remote.payload);
-  }, []);
+    scope.ready = false; setLoading(true);
+    // Finish an already started write before explicitly discarding pending edits.
+    try {
+      if (scope.queue?.status === "saving") await scope.queue.flush();
+      const remote = await loadRemoteData(scope.space);
+      if (current.current !== scope) return;
+      try { localStorage.removeItem(draftKey(scope)); } catch { /* unavailable */ }
+      attach(scope, remote.payload, remote.revision);
+    } finally {
+      if (current.current === scope) { scope.ready = Boolean(scope.queue); setLoading(false); }
+    }
+  }, [attach]);
   useEffect(() => {
     if (!userId || !spaceId) return;
     let cancelled = false;
     current.current = blank(userId, spaceId);
     setData(emptyData()); setLoading(true);
-    void reload().catch((err: Error) => { if (!cancelled) error(err.message); }).finally(() => { if (!cancelled) setLoading(false); });
+    const initial = current.current;
+    setSaveStatus("saved"); setSaveMessage("");
+    void loadRemoteData(spaceId).then((remote) => {
+      if (cancelled || current.current !== initial) return;
+      const queue = attach(initial, remote.payload, remote.revision);
+      try {
+        const raw = localStorage.getItem(draftKey(initial));
+        if (raw) {
+          const draft = JSON.parse(raw) as { data: AppData; revision: number };
+          if (draft.data?.version === 1 && Number.isInteger(draft.revision) &&
+            [draft.data.ingredients, draft.data.recipes, draft.data.shoppings, draft.data.lists].every(Array.isArray)) {
+            // Keep the original base revision: the server will refuse a stale draft.
+            queue.revision = draft.revision;
+            queue.edit(draft.data); setData(draft.data);
+          }
+        }
+      } catch { /* Ignore an unreadable local draft. */ }
+    }).catch((err: Error) => { if (!cancelled) error(err.message); }).finally(() => { if (!cancelled) setLoading(false); });
     const check = async () => {
       if (cancelled) return;
       const scope = current.current;
+      if (!scope.ready) return;
+      const snapshot = scope.data;
+      const revision = scope.revision;
       try {
         const remote = await loadRemoteData(spaceId);
-        if (cancelled || current.current !== scope) return;
-        if (scope.dirty || inFlight.current) {
-          if (remote.revision !== scope.revision && !inFlight.current) info("Cet espace a changé. Rechargez avant de sauvegarder.");
+        if (cancelled || current.current !== scope || scope.data !== snapshot || scope.revision !== revision) return;
+        if (scope.dirty || scope.queue?.status === "saving") {
           return;
         }
-        current.current = { ...scope, data: remote.payload, revision: remote.revision, ready: true };
-        setData(remote.payload);
+        attach(scope, remote.payload, remote.revision);
       } catch (err) {
         if (cancelled || current.current !== scope) return;
         // A failed request must never erase unsaved edits during a network outage.
@@ -99,31 +150,51 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const interval = window.setInterval(() => { void check(); }, 30000);
     window.addEventListener("focus", check);
     return () => { cancelled = true; clearInterval(interval); window.removeEventListener("focus", check); void supabase.removeChannel(channel); };
-  }, [userId, spaceId, reload, refreshSpaces, error, info]);
+  }, [userId, spaceId, attach, refreshSpaces, error]);
 
   const updateData = useCallback((updater: (data: AppData) => AppData) => {
     const scope = current.current;
-    if (!scope.ready || inFlight.current) return;
-    const next = updater(scope.data);
-    current.current = { ...scope, data: next, dirty: true }; setData(next);
+    if (!scope.ready || !scope.queue) return;
+    const next = updater(scope.queue.data);
+    if (next === scope.queue.data) return;
+    scope.queue.edit(next); setData(next);
   }, []);
   const persist = useCallback(async (notify = false): Promise<boolean> => {
     const scope = current.current;
-    if (inFlight.current) return false;
-    if (!scope.ready) return !scope.dirty;
-    if (!scope.dirty) { if (notify) info("Sauvegarde terminée"); return true; }
-    inFlight.current = true; setSaving(true);
-    try {
-      const revision = await saveRemoteData(scope.space, scope.data, scope.revision);
-      if (current.current === scope) { current.current = { ...scope, revision, dirty: false }; if (notify) info("Sauvegarde terminée"); }
-      return true;
-    } catch (err) { if (current.current === scope) error(err instanceof Error ? err.message : "Sauvegarde impossible"); return false; }
-    finally { inFlight.current = false; setSaving(false); }
+    const saved = scope.queue ? await scope.queue.flush() : !scope.dirty;
+    if (current.current !== scope) return false;
+    if (saved && notify) info("Enregistrement terminé");
+    if (!saved) error(scope.queue?.message ?? "Enregistrement impossible");
+    return saved;
   }, [error, info]);
+  useEffect(() => {
+    const queue = current.current.queue;
+    if (!queue?.dirty || queue.status === "error") return;
+    const timer = window.setTimeout(() => {
+      if (current.current.ready && current.current.queue === queue) void queue.flush();
+    }, 700);
+    return () => clearTimeout(timer);
+  }, [data]);
+  useEffect(() => {
+    const retry = () => { const scope = current.current; if (scope.ready && scope.queue?.dirty) void scope.queue.flush(); };
+    const leave = () => { if (document.visibilityState === "hidden") retry(); };
+    const guard = (event: BeforeUnloadEvent) => {
+      if (current.current.queue?.dirty) { event.preventDefault(); event.returnValue = ""; }
+    };
+    window.addEventListener("online", retry);
+    window.addEventListener("focus", retry);
+    window.addEventListener("beforeunload", guard);
+    document.addEventListener("visibilitychange", leave);
+    const timer = window.setInterval(retry, 30000);
+    return () => {
+      clearInterval(timer); window.removeEventListener("online", retry); window.removeEventListener("focus", retry);
+      window.removeEventListener("beforeunload", guard); document.removeEventListener("visibilitychange", leave);
+    };
+  }, []);
   const switchSpace = useCallback(async (id: string) => {
     if (id === spaceId || !spaces.some((space) => space.id === id)) return;
     if (!await persist()) return;
-    current.current = { ...current.current, ready: false }; setSpaceId(id);
+    current.current.ready = false; setSpaceId(id);
   }, [persist, spaceId, spaces]);
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
@@ -139,7 +210,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => { void listener.then((handle) => handle.remove()); };
   }, [persist]);
   const resetLocal = useCallback(() => updateData(() => emptyData()), [updateData]);
-  return <AppContext.Provider value={{ session, data, loading, saving, toast, email: session?.user.email,
+  return <AppContext.Provider value={{ session, data, loading, saving, saveStatus, saveMessage, toast, email: session?.user.email,
     spaces, spaceId, setToast, error, info, updateData, persist, reload, resetLocal, refreshSpaces, switchSpace }}>{children}</AppContext.Provider>;
 }
 export function useApp(): AppContextValue {

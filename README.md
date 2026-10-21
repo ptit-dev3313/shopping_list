@@ -11,7 +11,7 @@ Les données vivent dans le projet Supabase **Shopping list**. On crée un compt
 - Les invitations apparaissent dans les paramètres du destinataire après création et confirmation de son compte. Aucun e-mail d’invitation n’est envoyé. Le destinataire doit accepter avant de voir les données.
 - Un espace personnel ne peut pas être partagé. Pour ne partager qu’une liste « À acheter », copiez-la vers un autre espace depuis les paramètres. Seuls cette liste et ses ingrédients sont copiés ; les copies évoluent indépendamment.
 - L’ancien espace `household` et son contenu sont conservés. Le premier compte existant autorisé en est propriétaire ; les autres anciennes adresses autorisées ont une invitation.
-- La sauvegarde reste manuelle. Une version de données empêche d’écraser une sauvegarde plus récente. En cas de conflit, les modifications locales sont conservées ; rechargez l’espace pour récupérer la version distante (cela abandonne les modifications locales).
+- Les modifications sont enregistrées automatiquement après 700 ms sans nouvelle modification, avec un état affiché sous le sélecteur d’espace. Les envois sont successifs : continuer à modifier pendant un envoi ne perd aucune modification. Une version de données empêche d’écraser une sauvegarde plus récente. En cas de conflit, les modifications locales sont conservées ; rechargez l’espace pour récupérer la version distante (cela abandonne les modifications locales).
 
 ## Base et sécurité
 
@@ -42,11 +42,11 @@ Le projet Android est dans `android/`. Installez les dépendances, un JDK 21 et 
 npm run android:build
 ```
 
-Le fichier installable signé est copié dans `release/Courses.apk` et `release/Courses-0.5.0.apk`. La configuration privée de signature est dans `.tools/signing` ; ne la publiez jamais. Transférez l’APK sur le téléphone puis ouvrez-la pour l’installer. Android 7.0 minimum. Pour les mises à jour, gardez le même identifiant d’application et la même clé de signature : une installation par-dessus conserve les données ; désinstaller l’application les efface. Pour une APK de débogage séparée : `npm run android:build -- --debug`.
+Le fichier installable signé est copié dans `release/Courses.apk` et `release/Courses-0.5.2.apk`. La configuration privée de signature est dans `.tools/signing` ; ne la publiez jamais. Transférez l’APK sur le téléphone puis ouvrez-la pour l’installer. Android 7.0 minimum. Pour les mises à jour, gardez le même identifiant d’application et la même clé de signature : une installation par-dessus conserve les données ; désinstaller l’application les efface. Pour une APK de débogage séparée : `npm run android:build -- --debug`.
 
 La session est conservée dans les préférences natives Android et les jetons sont renouvelés automatiquement. Il n’est pas nécessaire de se reconnecter à chaque ouverture. Une déconnexion explicite, une session révoquée ou la suppression des données de l’app nécessitent une nouvelle connexion. Le mot de passe n’est pas stocké. Les sauvegardes Android des données de l’app sont désactivées. Sur le web, Supabase conserve son stockage local habituel.
 
-Sur Android, une sauvegarde est aussi tentée au passage en arrière-plan. Utilisez **Sauvegarder** avant de fermer l’app pour être certain que les changements ont atteint le cloud ; une coupure réseau ou l’arrêt forcé du processus peut interrompre cette tentative. Cette version ne propose pas de mode hors ligne complet.
+Une sauvegarde est aussi tentée au passage en arrière-plan. Les modifications en attente sont conservées dans le stockage local de l’appareil, séparément par compte et espace, puis reprises à la prochaine ouverture après chargement du cloud. Après une coupure réseau, un nouvel envoi est tenté au retour du réseau, au retour dans l’app et toutes les 30 secondes. Attendez « Enregistré automatiquement » pour confirmer leur arrivée dans le cloud. Un conflit de versions conserve le brouillon et refuse tout écrasement ; « Recharger depuis le cloud » l’abandonne explicitement. Le chargement initial nécessite une connexion : ce n’est pas un mode hors ligne complet.
 
 Pour ouvrir le projet dans Android Studio :
 

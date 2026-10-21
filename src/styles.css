@@ -405,3 +405,7 @@ input, select {
 .rename-title .field { flex: 1; min-width: 0; margin: 0; }
 .rename-title .title-input { width: 100%; }
 .sheet > .btn:last-child { position: sticky; bottom: 0; background: var(--card); box-shadow: 0 -8px 12px var(--card); }
+
+.autosave-status { color: #526452; font-size: .8rem; margin: -4px 0 12px; overflow-wrap: anywhere; }
+.autosave-status small { display: block; margin-top: 4px; }
+.autosave-status.error { color: #963a27; }
