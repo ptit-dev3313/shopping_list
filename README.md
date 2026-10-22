@@ -42,7 +42,7 @@ Le projet Android est dans `android/`. Installez les dépendances, un JDK 21 et 
 npm run android:build
 ```
 
-Le fichier installable signé est copié dans `release/Courses.apk` et `release/Courses-0.5.2.apk`. La configuration privée de signature est dans `.tools/signing` ; ne la publiez jamais. Transférez l’APK sur le téléphone puis ouvrez-la pour l’installer. Android 7.0 minimum. Pour les mises à jour, gardez le même identifiant d’application et la même clé de signature : une installation par-dessus conserve les données ; désinstaller l’application les efface. Pour une APK de débogage séparée : `npm run android:build -- --debug`.
+Le fichier installable signé est copié dans `release/Courses.apk` et `release/Courses-0.5.3.apk`. La configuration privée de signature est dans `.tools/signing` ; ne la publiez jamais. Transférez l’APK sur le téléphone puis ouvrez-la pour l’installer. Android 7.0 minimum. Pour les mises à jour, gardez le même identifiant d’application et la même clé de signature : une installation par-dessus conserve les données ; désinstaller l’application les efface. Pour une APK de débogage séparée : `npm run android:build -- --debug`.
 
 La session est conservée dans les préférences natives Android et les jetons sont renouvelés automatiquement. Il n’est pas nécessaire de se reconnecter à chaque ouverture. Une déconnexion explicite, une session révoquée ou la suppression des données de l’app nécessitent une nouvelle connexion. Le mot de passe n’est pas stocké. Les sauvegardes Android des données de l’app sont désactivées. Sur le web, Supabase conserve son stockage local habituel.
 
@@ -54,7 +54,11 @@ Pour ouvrir le projet dans Android Studio :
 npx cap open android
 ```
 
+La version 0.5.3 télécharge les mises à jour directement dans Courses et ouvre l’installateur Android, sans navigateur. Android demande une autorisation d’installation pour Courses la première fois et conserve la confirmation de chaque mise à jour.
+
 ## Ingrédients et listes
+
+Les suggestions d’ingrédients sont intégrées sous le champ de saisie, avec une liste défilante et une sélection au toucher ou au clavier.
 
 - **Déjà à la maison** affiche les ingrédients nécessaires aux recettes et aux extras, avec les quantités regroupées et les unités compatibles converties. Chaque sélection propose la quantité totale par défaut. Après validation, la quantité disponible apparaît en orange et le reste à acheter est recalculé. La fenêtre reste ouverte jusqu’au bouton **Fermer** ; sélectionner à nouveau un ingrédient permet de corriger sa quantité ou de le retirer.
 - Les listes de courses générées suivent l’ordre du catalogue d’ingrédients. Ajouter ou renommer un ingrédient ne réinitialise plus cet ordre. Déplacer un ingrédient dans le catalogue remet aussi les listes existantes dans cet ordre ; le déplacement manuel dans une liste reste possible.

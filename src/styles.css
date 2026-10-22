@@ -409,3 +409,9 @@ input, select {
 .autosave-status { color: #526452; font-size: .8rem; margin: -4px 0 12px; overflow-wrap: anywhere; }
 .autosave-status small { display: block; margin-top: 4px; }
 .autosave-status.error { color: #963a27; }
+
+.ingredient-suggestions { max-height: 144px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 12px; background: var(--card); flex-shrink: 0; }
+.ingredient-suggestions button { display: block; width: 100%; min-height: 44px; padding: 10px 12px; border: 0; border-bottom: 1px solid var(--line); text-align: left; color: var(--ink); background: transparent; }
+.ingredient-suggestions button:last-child { border-bottom: 0; }
+.ingredient-suggestions button[aria-selected="true"], .ingredient-suggestions button:active { background: var(--accent-soft); }
+.update-progress { width: 100%; accent-color: var(--accent); }

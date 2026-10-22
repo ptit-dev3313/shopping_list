@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Overlay } from "./Page";
+import { IngredientNameInput } from "./IngredientNameInput";
 import { formatLine, formatQuantity, parseQuantity } from "../lib/format";
 import { scaledRecipeIngredients } from "../lib/data";
 import type { AppData, LineItem, Recipe, Unit } from "../lib/types";
@@ -43,22 +44,7 @@ export function IngredientDialog({
 
   return (
     <Overlay title={editing ? "Modifier l'ingrédient" : "Ajouter un ingrédient"} onClose={onClose}>
-      <datalist id="ingredient-names">
-        {names.map((option) => (
-          <option key={option} value={option} />
-        ))}
-      </datalist>
-      <label className="field">
-        Nom
-        <input
-          autoCapitalize="none"
-          autoCorrect="off"
-          list="ingredient-names"
-          value={name}
-          placeholder="Farine, lait…"
-          onChange={(event) => setName(event.target.value)}
-        />
-      </label>
+      <IngredientNameInput value={name} names={names} onChange={setName} />
       <div className="split">
         <label className="field">
           Quantité

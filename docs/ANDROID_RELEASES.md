@@ -11,7 +11,8 @@ Le code courant ne nécessite aucun jeton GitHub embarqué. Les données utilisa
 - Dépôt et nom d’APK : `release.config.json` (`ptit-dev3313/shopping_list`, `Courses.apk`).
 - Vérification automatique au démarrage puis à la reprise (au maximum toutes les six heures), et manuelle via le bouton en haut à droite.
 - Seules les releases stables publiées et contenant `Courses.apk` sont proposées. Les brouillons et préversions sont exclus. Les liens sont limités à ce dépôt GitHub.
-- Téléchargement par le navigateur système. L’utilisateur ouvre ensuite l’APK et confirme l’installation dans Android. Aucune installation silencieuse ni permission d’installation ajoutée à Courses.
+- À partir de 0.5.3 : téléchargement natif dans le cache privé de Courses, progression affichée, contrôle SHA-256 fourni par GitHub, du nom de paquet, de la version Android croissante et de la même signature. Seuls les liens HTTPS de ce dépôt et ses redirections vers les serveurs d’assets GitHub sont acceptés. Le fichier est ensuite transmis en lecture seule à l’installateur Android via un FileProvider limité au dossier `updates/`. Aucun accès au stockage partagé n’est requis.
+- Android 8 et plus : `REQUEST_INSTALL_PACKAGES` permet de demander l’autorisation d’installer depuis Courses. Elle est accordée dans les réglages Android pour Courses uniquement. Au retour, l’installateur est ouvert automatiquement. Android conserve sa confirmation de mise à jour ; aucune protection Android ou du navigateur ne doit être désactivée. Une annulation permet de relancer l’installation avec le fichier déjà téléchargé (tant que le cache existe). La première installation de 0.5.3 depuis une version antérieure utilise encore l’ancien parcours par APK.
 - L’identité de signature de l’APK locale existante a été importée dans un conteneur protégé, afin de conserver la compatibilité des mises à jour. Le build de publication est signé et non débogable. **Sauvegardez `.tools/signing/` dans un emplacement privé** ; ce dossier ne doit jamais être commité.
 - Secrets GitHub Actions configurés : `ANDROID_KEYSTORE_BASE64`, `ANDROID_STORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
 - Variables GitHub Actions configurées : `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (configuration publique).
@@ -35,3 +36,9 @@ Installez l’APK par-dessus la version précédente, avec le même identifiant 
 `SystemBars.insetsHandling` utilise le mode natif de Capacitor 8, avec `viewport-fit=contain` et `EdgeToEdge.enable`. La WebView est maintenue dans la zone utilisable en tenant compte des barres système, des découpes et du clavier. Cela évite que le sélecteur d’espace, les en-têtes ou les fenêtres recouvrent les contrôles Android. Les champs restent zoomables et les commandes s’adaptent aux écrans étroits.
 
 Références : [Capacitor SystemBars](https://capacitorjs.com/docs/apis/system-bars), [signature Android](https://developer.android.com/studio/publish/app-signing), [GitHub Releases](https://docs.github.com/en/rest/releases/releases).
+
+## Vérifier le parcours natif
+
+Les tests de composants couvrent les suggestions sous le champ, la sélection au toucher et au clavier, le téléchargement intégré, la reprise d’installation sans nouveau téléchargement et le blocage si des modifications ne sont pas enregistrées.
+
+Pour l’instrumentation Android : `android/gradlew -p android :app:assembleDebug :app:assembleDebugAndroidTest`, puis installer les deux APK de test sur un émulateur dédié. `AppUpdatesTest` refuse une URL externe. Son test optionnel `downloadsVerifiesAndOpensAndroidInstaller` prend les arguments `updateUrl` et `updateSha256` d’une release officielle plus récente que la version installée ; il vérifie le téléchargement réel, le fichier et l’ouverture de l’installateur. L’autorisation Android doit être accordée pendant ce test si elle ne l’est pas déjà. Les données réelles d’un compte ne sont pas utilisées.

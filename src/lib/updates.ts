@@ -1,6 +1,6 @@
 import releaseConfig from "../../release.config.json";
 
-export type AppRelease = { version: string; pageUrl: string; apkUrl: string };
+export type AppRelease = { version: string; pageUrl: string; apkUrl: string; apkSha256: string | null };
 export const releasePage = `https://github.com/${releaseConfig.repository}/releases`;
 export const latestReleaseApi = `https://api.github.com/repos/${releaseConfig.repository}/releases/latest`;
 
@@ -35,7 +35,8 @@ export function parseRelease(payload: unknown): AppRelease | null {
   const version = value.tag_name.replace(/^v/, "");
   const expectedPrefix = `https://github.com/${releaseConfig.repository}/releases/download/${encodeURIComponent(value.tag_name)}/`;
   if (!asset.browser_download_url.startsWith(expectedPrefix)) return null;
-  return { version, pageUrl: `${releasePage}/tag/${encodeURIComponent(value.tag_name)}`, apkUrl: asset.browser_download_url };
+  const apkSha256 = typeof asset.digest === "string" && /^sha256:[a-f0-9]{64}$/.test(asset.digest) ? asset.digest.slice(7) : null;
+  return { version, pageUrl: `${releasePage}/tag/${encodeURIComponent(value.tag_name)}`, apkUrl: asset.browser_download_url, apkSha256 };
 }
 
 export async function fetchLatestRelease(signal: AbortSignal): Promise<AppRelease | null> {

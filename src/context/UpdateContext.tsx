@@ -50,7 +50,8 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
       if (cache && typeof cache.at === "number" && cache.at <= Date.now() && Date.now() - cache.at < interval) {
         // Validate cached URLs with the same checks as the server response.
         const cached = cache.latest ? parseRelease({ tag_name: `v${cache.latest.version}`, draft: false, prerelease: false,
-          assets: [{ name: "Courses.apk", state: "uploaded", size: 1, browser_download_url: cache.latest.apkUrl }] }) : null;
+          assets: [{ name: "Courses.apk", state: "uploaded", size: 1, browser_download_url: cache.latest.apkUrl,
+            digest: cache.latest.apkSha256 ? `sha256:${cache.latest.apkSha256}` : undefined }] }) : null;
         if (!cache.latest || cached) { setRelease(cached); setChecked(true); lastCheck.current = cache.at; }
       }
     } catch { /* ignore corrupt caches */ }
