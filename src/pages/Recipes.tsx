@@ -75,7 +75,7 @@ export function EditRecipe() {
 
   return (
     <Page title="Recette" back="/recipes">
-      <RenameTitle value={recipe.name} label="Nom de la recette" lowercase onSave={(name) => updateData((current) => renameRecipe(current, id, name))} />
+      <RenameTitle value={recipe.name} label="Nom de la recette" onSave={(name) => updateData((current) => renameRecipe(current, id, name))} />
       <button className="btn primary" type="button" onClick={() => setDialog(emptyIngredientForm())}>
         Ajouter un ingrédient
       </button>

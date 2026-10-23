@@ -29,12 +29,12 @@ export function Sharing() {
       if (!await persist()) return;
       await renameSpace(spaceId, spaceName); await reload(); info("Espace renommé");
     }); }}>
-      <label className="field">Nom de l’espace actif<input value={spaceName} onChange={(event) => setSpaceName(event.target.value)} required maxLength={100} /></label>
+      <label className="field">Nom de l’espace actif<input autoCapitalize="none" value={spaceName} onChange={(event) => setSpaceName(event.target.value.toLocaleLowerCase("fr"))} required maxLength={100} /></label>
       <button className="btn" type="submit" disabled={busy || spaceName === activeName}>Renommer cet espace</button>
     </form> : null}
     <p className="hint">Chaque compte possède un espace privé. Les invités peuvent voir et modifier tout le contenu de l’espace partagé. Pour partager seulement certaines listes, créez un espace séparé et copiez-y les listes choisies.</p>
     <form className="stack" onSubmit={(event) => { event.preventDefault(); void run(async () => { await createSpace(name); setName(""); info("Espace créé. Sélectionnez-le dans le menu en haut."); }); }}>
-      <label className="field">Nouvel espace<input value={name} onChange={(event) => setName(event.target.value)} required maxLength={100} /></label>
+      <label className="field">Nouvel espace<input autoCapitalize="none" value={name} onChange={(event) => setName(event.target.value.toLocaleLowerCase("fr"))} required maxLength={100} /></label>
       <button className="btn" disabled={busy || !name.trim()}>Créer un espace</button>
     </form>
     {owned && spaceId && !spaceId.startsWith("personal:") ? <>

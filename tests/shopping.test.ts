@@ -67,13 +67,13 @@ describe("fusion et noms", () => {
     expect(data.recipes[1].ingredients[0].ingredientId).toBe("duplicate");
     expect(() => mergeIngredients(data, "duplicate", "tomato", "sel")).toThrow();
   });
-  it("refuse les majuscules, retrouve les ingrédients anciens sans doublon et préserve l’ordre au renommage", () => {
+  it("convertit les majuscules, retrouve les ingrédients anciens sans doublon et préserve l’ordre au renommage", () => {
     const data = fixture();
-    expect(() => ensureIngredient(data, "Tomate")).toThrow(/minuscules/);
-    expect(() => createRecipe(data, "Salade")).toThrow(/minuscules/);
+    expect(ensureIngredient(data, "TOMATE").data.ingredients.at(-1)?.name).toBe("tomate");
+    expect(createRecipe(data, "SALADE").data.recipes[0].name).toBe("salade");
     expect(ensureIngredient(data, "tomates").id).toBe("tomato");
     expect(renameIngredient(data, "salt", "sel fin").ingredients.map((item) => item.id)).toEqual(["salt", "tomato", "flour"]);
     data.lists = [{ id: "list", name: "ancien", items: [] }];
-    expect(renameList(data, "list", "Nouveau nom").lists[0].name).toBe("Nouveau nom");
+    expect(renameList(data, "list", "Nouveau nom").lists[0].name).toBe("nouveau nom");
   });
 });

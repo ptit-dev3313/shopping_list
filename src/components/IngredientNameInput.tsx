@@ -11,7 +11,7 @@ export function IngredientNameInput({ value, names, onChange }: {
   const [active, setActive] = useState(-1);
   const matches = [...new Set(names)].filter((name) => searchable(name).includes(searchable(value.trim()))).slice(0, 50);
   const visible = open && matches.length > 0;
-  const choose = (name: string) => { onChange(name); setOpen(false); setActive(-1); };
+  const choose = (name: string) => { onChange(name.toLocaleLowerCase("fr")); setOpen(false); setActive(-1); };
   return <div className="field ingredient-autocomplete" ref={root}>
     <label htmlFor={id}>Nom</label>
     <input id={id} role="combobox" aria-autocomplete="list" aria-expanded={visible}
@@ -24,7 +24,7 @@ export function IngredientNameInput({ value, names, onChange }: {
         requestAnimationFrame(() => root.current?.scrollIntoView?.({ block: "nearest" }));
       }}
       onBlur={() => { setOpen(false); setActive(-1); }}
-      onChange={(event) => { onChange(event.target.value); setOpen(true); setActive(-1); }}
+      onChange={(event) => { onChange(event.target.value.toLocaleLowerCase("fr")); setOpen(true); setActive(-1); }}
       onKeyDown={(event) => {
         if (event.key === "Escape") { setOpen(false); setActive(-1); }
         if (event.key === "ArrowDown" || event.key === "ArrowUp") {

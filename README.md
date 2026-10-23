@@ -42,7 +42,7 @@ Le projet Android est dans `android/`. Installez les dépendances, un JDK 21 et 
 npm run android:build
 ```
 
-Le fichier installable signé est copié dans `release/Courses.apk` et `release/Courses-0.5.3.apk`. La configuration privée de signature est dans `.tools/signing` ; ne la publiez jamais. Transférez l’APK sur le téléphone puis ouvrez-la pour l’installer. Android 7.0 minimum. Pour les mises à jour, gardez le même identifiant d’application et la même clé de signature : une installation par-dessus conserve les données ; désinstaller l’application les efface. Pour une APK de débogage séparée : `npm run android:build -- --debug`.
+Le fichier installable signé est copié dans `release/Courses.apk` et `release/Courses-0.5.4.apk`. La configuration privée de signature est dans `.tools/signing` ; ne la publiez jamais. Transférez l’APK sur le téléphone puis ouvrez-la pour l’installer. Android 7.0 minimum. Pour les mises à jour, gardez le même identifiant d’application et la même clé de signature : une installation par-dessus conserve les données ; désinstaller l’application les efface. Pour une APK de débogage séparée : `npm run android:build -- --debug`.
 
 La session est conservée dans les préférences natives Android et les jetons sont renouvelés automatiquement. Il n’est pas nécessaire de se reconnecter à chaque ouverture. Une déconnexion explicite, une session révoquée ou la suppression des données de l’app nécessitent une nouvelle connexion. Le mot de passe n’est pas stocké. Les sauvegardes Android des données de l’app sont désactivées. Sur le web, Supabase conserve son stockage local habituel.
 
@@ -64,7 +64,7 @@ Les suggestions d’ingrédients sont intégrées sous le champ de saisie, avec 
 - Les listes de courses générées suivent l’ordre du catalogue d’ingrédients. Ajouter ou renommer un ingrédient ne réinitialise plus cet ordre. Déplacer un ingrédient dans le catalogue remet aussi les listes existantes dans cet ordre ; le déplacement manuel dans une liste reste possible.
 - Les poignées de déplacement font défiler la page près des bords supérieur et inférieur, à la souris comme au doigt.
 - **Ingrédients → Fusionner deux ingrédients** remplace leurs références dans toutes les recettes, les extras, le stock disponible et les listes de l’espace actif. Les quantités et les cases cochées restent conservées. Choisissez l’orthographe finale en minuscules. Cette opération ne modifie pas les copies dans d’autres espaces.
-- Les nouveaux noms de recettes et d’ingrédients, ainsi que leurs renommages, refusent les majuscules. Les anciens noms ne sont pas réécrits automatiquement.
+- Les noms saisis (recettes, ingrédients, listes et espaces) sont automatiquement convertis en minuscules pendant la saisie, y compris lors d’un collage ou d’un renommage. Les mots de passe ne sont pas transformés. Les anciens noms ne sont pas réécrits automatiquement.
 - Les recettes, les achats et les listes de courses ont un bouton explicite **Renommer**. Les ingrédients se renomment via leur crayon ; le propriétaire peut renommer son espace dans les paramètres.
 
 Tests : `npm test` (calculs, conversions, fusion, ordre, fenêtre persistante, défilement et stockage de session).

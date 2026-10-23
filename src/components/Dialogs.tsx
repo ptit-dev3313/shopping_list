@@ -169,7 +169,7 @@ export function TextDialog({
   const [draft, setDraft] = useState(value);
   return (
     <Overlay title={title} onClose={onClose}>
-      <input autoCapitalize="none" value={draft} onChange={(event) => setDraft(event.target.value)} />
+      <input autoCapitalize="none" value={draft} onChange={(event) => setDraft(event.target.value.toLocaleLowerCase("fr"))} />
       <button className="btn primary" type="button" onClick={() => onSave(draft)}>
         {action}
       </button>

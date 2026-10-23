@@ -34,3 +34,12 @@ it("accepte les accents, le clavier et ferme le menu en quittant le champ", asyn
   expect(screen.queryByRole("listbox")).toBeNull();
   expect(screen.getByRole("textbox", { name: "Quantité" })).toBe(document.activeElement);
 });
+it("convertit la frappe et le collage en minuscules avant de choisir un ingrédient", async () => {
+  const user = userEvent.setup(); render(<Harness />);
+  const input = screen.getByRole("combobox");
+  await user.type(input, "TOM");
+  expect((input as HTMLInputElement).value).toBe("tom");
+  expect(screen.getByRole("option", { name: "tomates" })).toBeTruthy();
+  await user.clear(input); await user.paste("CRÈME");
+  expect((input as HTMLInputElement).value).toBe("crème");
+});

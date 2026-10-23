@@ -15,17 +15,13 @@ export function parseQuantity(text: string): number {
 }
 
 export function requireName(name: string): string {
-  const trimmed = name.trim();
+  const trimmed = name.trim().normalize("NFC").toLocaleLowerCase("fr");
   if (!trimmed) throw new Error("Nom invalide!");
   return trimmed;
 }
 
 export function requireLowercaseName(name: string): string {
-  const value = requireName(name).normalize("NFC");
-  if (value !== value.toLocaleLowerCase("fr")) {
-    throw new Error("Utilisez uniquement des minuscules pour les recettes et les ingrédients.");
-  }
-  return value;
+  return requireName(name);
 }
 
 export function ingredientName(data: AppData, id: string): string {

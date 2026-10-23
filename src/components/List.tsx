@@ -20,9 +20,10 @@ export function AddRow({
       }}
     >
       <input
+        autoCapitalize="none"
         value={value}
         placeholder={placeholder}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => onChange(event.target.value.toLocaleLowerCase("fr"))}
       />
       <button className="btn primary" type="submit">
         Ajouter
