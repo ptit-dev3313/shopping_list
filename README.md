@@ -44,7 +44,7 @@ npm run audit:public
 npm run build
 ```
 
-Pour la version ordinateur : `npm run electron:dev` ou `npm run electron:build`.
+La distribution est limitée à Android : une APK signée est publiée sur GitHub Releases. L’application se connecte directement à Supabase ; aucun VPS n’est nécessaire.
 
 Les variables `VITE_*` sont intégrées au client : utilisez uniquement une URL d’API et une clé publique prévues à cet effet. Les accès aux données doivent être protégés côté serveur.
 
